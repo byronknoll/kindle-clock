@@ -102,13 +102,26 @@ echo "`date '+%Y-%m-%d_%H:%M:%S'`: Initial time set. ($RC)" >> $LOG
 #update_weather
 clear_screen
 
+LAST_MINUTE=""
 while true; do
+    CURRENT_MINUTE=`date "+%M"`
+    
+    # Check if minute has changed
+    if [ "$CURRENT_MINUTE" = "$LAST_MINUTE" ]; then
+        # Minute hasn't changed, sleep and continue
+        sleep 1
+        continue
+    fi
+    
+    # Minute has changed, update LAST_MINUTE and run normal logic
+    LAST_MINUTE="$CURRENT_MINUTE"
+    
     echo "`date '+%Y-%m-%d_%H:%M:%S'`: Top of loop (awake!)." >> $LOG
     ### Backlight off
     #echo -n 0 > $BACKLIGHT
 
     ### Get weather data and set time via ntpdate every hour
-    MINUTE=`date "+%M"`
+    MINUTE="$CURRENT_MINUTE"
     if [ "$MINUTE" = "00" ]; then
         echo "`date '+%Y-%m-%d_%H:%M:%S'`: Enabling Wifi" >> $LOG
         ### Enable WIFI, disable wifi first in order to have a defined state
@@ -176,23 +189,4 @@ while true; do
     $FBINK -w -s
 
     echo "`date '+%Y-%m-%d_%H:%M:%S'`: Battery: $BAT" >> $LOG
-
-    ### Set Wakeuptimer
-	#echo 0 > /sys/class/rtc/rtc1/wakealarm
-	#echo ${WAKEUP_TIME} > /sys/class/rtc/rtc1/wakealarm
-    NOW=$(date +%s)
-    let WAKEUP_TIME="((($NOW + 59)/60)*60)" # Hack to get next minute
-    let SLEEP_SECS=$WAKEUP_TIME-$NOW
-
-    ### Prevent SLEEP_SECS from being negative or just too small
-    ### if we took too long
-    if [ $SLEEP_SECS -lt 5 ]; then
-        let SLEEP_SECS=$SLEEP_SECS+60
-    fi
-    echo "`date '+%Y-%m-%d_%H:%M:%S'`: Going to sleep for $SLEEP_SECS" >> $LOG
-    sleep $SLEEP_SECS
-    #rtcwake -d /dev/rtc1 -m no -s $SLEEP_SECS
-	### Go into Suspend to Memory (STR)
-	#echo "mem" > /sys/power/state
-#    exit
 done
