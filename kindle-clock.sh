@@ -125,12 +125,12 @@ while true; do
     if [ "$MINUTE" = "00" ]; then
         echo "`date '+%Y-%m-%d_%H:%M:%S'`: Enabling Wifi" >> $LOG
         ### Enable WIFI, disable wifi first in order to have a defined state
-    	#lipc-set-prop com.lab126.cmd wirelessEnable 1
+    	lipc-set-prop com.lab126.cmd wirelessEnable 1
         TRYCNT=0
         NOWIFI=0
         ### Wait for wifi to come up
     	while wait_for_wifi; do
-            if [ ${TRYCNT} -gt 30 ]; then
+            if [ ${TRYCNT} -gt 10 ]; then
                 ### waited long enough
                 echo "`date '+%Y-%m-%d_%H:%M:%S'`: No Wifi... ($TRYCNT)" >> $LOG
                 NOWIFI=1
@@ -166,7 +166,7 @@ while true; do
     fi
 
     ### Disable WIFI
-    #lipc-set-prop com.lab126.cmd wirelessEnable 0
+    lipc-set-prop com.lab126.cmd wirelessEnable 0
 
     #BAT=$(gasgauge-info -s)
     BAT=$(cat $BATTERY)
