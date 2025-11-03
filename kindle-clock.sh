@@ -122,6 +122,34 @@ while true; do
 
     ### Get weather data and set time via ntpdate every hour
     MINUTE="$CURRENT_MINUTE"
+
+    ### Disable WIFI
+    lipc-set-prop com.lab126.cmd wirelessEnable 0
+
+    #BAT=$(gasgauge-info -s)
+    BAT=$(cat $BATTERY)
+    TIME=$(date '+%-I:%M')
+    DATE=$(date '+%A, %-d. %B %Y')
+    #INSIDE_TEMP_C=$(cat $TEMP_SENSOR)
+    # convert to centigrade
+    #let INSIDE_TEMP_C="($INSIDE_TEMP_F-32)*5/9"
+    if [ "$MINUTE" = "00" ]; then
+        clear_screen
+    fi
+
+    ## adjust coordinates according to display resolution. This is for PW2.
+    $FBINK -h -b -c -m -t $FONT,size=150,top=240,bottom=0,left=0,right=0 "$TIME"
+    #$FBINK -b -m -t $FONT,size=20,top=800,bottom=0,left=0,right=0 "$DATE"
+    #$FBINK -b    -t $FONT,size=10,top=0,bottom=0,left=900,right=0 "Bat: $BAT"
+    #$FBINK -b -m -t $FONT,size=20,top=510,bottom=0,left=0,right=0 "$COND"
+    #$FBINK -b -m -t $FONT,size=30,top=600,bottom=0,left=0,right=0 "$TEMP | $INSIDE_TEMP_C°C"
+    if [ "$NOWIFI" = "1" ]; then
+        $FBINK -b -t $FONT,size=10,top=0,bottom=0,left=50,right=0 "No Wifi!"
+    fi
+    ### update framebuffer
+    $FBINK -w -s
+
+    echo "`date '+%Y-%m-%d_%H:%M:%S'`: Battery: $BAT" >> $LOG
     if [ "$MINUTE" = "00" ]; then
         echo "`date '+%Y-%m-%d_%H:%M:%S'`: Enabling Wifi" >> $LOG
         ### Enable WIFI, disable wifi first in order to have a defined state
@@ -162,31 +190,7 @@ while true; do
             #update_weather
         fi
 
-        clear_screen
+        ### Disable WIFI
+        lipc-set-prop com.lab126.cmd wirelessEnable 0
     fi
-
-    ### Disable WIFI
-    lipc-set-prop com.lab126.cmd wirelessEnable 0
-
-    #BAT=$(gasgauge-info -s)
-    BAT=$(cat $BATTERY)
-    TIME=$(date '+%-I:%M')
-    DATE=$(date '+%A, %-d. %B %Y')
-    #INSIDE_TEMP_C=$(cat $TEMP_SENSOR)
-    # convert to centigrade
-    #let INSIDE_TEMP_C="($INSIDE_TEMP_F-32)*5/9"
-
-    ## adjust coordinates according to display resolution. This is for PW2.
-    $FBINK -h -b -c -m -t $FONT,size=150,top=240,bottom=0,left=0,right=0 "$TIME"
-    #$FBINK -b -m -t $FONT,size=20,top=800,bottom=0,left=0,right=0 "$DATE"
-    #$FBINK -b    -t $FONT,size=10,top=0,bottom=0,left=900,right=0 "Bat: $BAT"
-    #$FBINK -b -m -t $FONT,size=20,top=510,bottom=0,left=0,right=0 "$COND"
-    #$FBINK -b -m -t $FONT,size=30,top=600,bottom=0,left=0,right=0 "$TEMP | $INSIDE_TEMP_C°C"
-    if [ "$NOWIFI" = "1" ]; then
-        $FBINK -b -t $FONT,size=10,top=0,bottom=0,left=50,right=0 "No Wifi!"
-    fi
-    ### update framebuffer
-    $FBINK -w -s
-
-    echo "`date '+%Y-%m-%d_%H:%M:%S'`: Battery: $BAT" >> $LOG
 done
